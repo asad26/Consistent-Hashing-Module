@@ -16,6 +16,12 @@
 		<async-supported>true</async-supported>
 	</servlet>
 
+	<servlet>
+		<servlet-name>DataCollectionServlet</servlet-name>
+		<servlet-class>com.aalto.hashing.servlets.DataCollectionServlet</servlet-class>
+		<async-supported>true</async-supported>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>HTTPRequestServlet</servlet-name>
 		<url-pattern>/</url-pattern>
@@ -24,6 +30,11 @@
 	<servlet-mapping>
 		<servlet-name>RegisterNodeServlet</servlet-name>
 		<url-pattern>/Register</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>DataCollectionServlet</servlet-name>
+		<url-pattern>/Collect</url-pattern>
 	</servlet-mapping>
 
 </web-app>

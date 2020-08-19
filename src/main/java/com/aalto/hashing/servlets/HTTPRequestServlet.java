@@ -1,13 +1,10 @@
 package com.aalto.hashing.servlets;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServlet;
@@ -23,14 +20,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.aalto.hashing.OmiAPIs.ApiForOmi;
+import com.aalto.hashing.module.HTTPConnections;
 import com.aalto.hashing.module.HashingMethods;
 
 
 public class HTTPRequestServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private HashingMethods hm;
+	private HashingMethods hm = new HashingMethods();
+	private HTTPConnections httpConn = new HTTPConnections();
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
@@ -39,6 +37,7 @@ public class HTTPRequestServlet extends HttpServlet {
 		response.setStatus(HttpServletResponse.SC_OK);
 		PrintWriter out = response.getWriter();
 
+		// Start asynchronous operation and parse O-MI request
 		final AsyncContext acontext = request.startAsync();
 		acontext.setTimeout(0);
 		acontext.start(new Runnable() {
@@ -53,10 +52,17 @@ public class HTTPRequestServlet extends HttpServlet {
 						System.out.println("The request body is empty");
 						return;
 					} else {
+						String omiResponse = "";
 						objectIds = parseXml(data);
+						if (objectIds.get(0).equals("read")) {
+							objectIds.remove(0);
+							String dataForHash = String.join("/", objectIds);
+							String server = hm.mapDataToServer(dataForHash);
+							omiResponse = httpConn.getDataFromServer(server, data);
+							out.println("Response " + omiResponse);
+							//System.out.println("Response sent! " + omiResponse);
+						}
 
-						out.println("Response " + objectIds);
-						System.out.println("Response sent! " + objectIds);
 					}
 
 					acontext.complete();
@@ -91,6 +97,7 @@ public class HTTPRequestServlet extends HttpServlet {
 			NodeList childList = rootObject.getChildNodes();
 			objects.add(childList.item(1).getNodeName());		
 
+			// Extracting all the objects ID
 			NodeList objectList = doc.getElementsByTagName("Object");
 			int objectCount = objectList.getLength();
 			//System.out.println("Total objects: " + objectCount);

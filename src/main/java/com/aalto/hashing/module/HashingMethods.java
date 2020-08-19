@@ -71,7 +71,7 @@ public class HashingMethods {
 				return allData.get(serverSucc);
 			}
 		}
-		return allData.firstKey();
+		return allData.get(allData.firstKey());
 	} 
 
 

@@ -1,6 +1,9 @@
 package com.aalto.hashing.module;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -12,6 +15,10 @@ import okhttp3.Response;
 
 public class HTTPConnections {
 
+	/**
+	 * Method for sending XML message to the O-MI sand box (Synchronously)
+	 * 
+	 */
 	public String sendDataToServer(String url, String finalMessage) {
 		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(100, TimeUnit.SECONDS)
 				.writeTimeout(50, TimeUnit.SECONDS)
@@ -25,7 +32,7 @@ public class HTTPConnections {
 		String result = null;
 		try {
 			response = client.newCall(request).execute();
-			System.out.println(response.message());
+			//System.out.println(response.message());
 			result =  response.body().string();
 			response.close();  
 		} catch (IOException e) {
@@ -33,7 +40,12 @@ public class HTTPConnections {
 		}
 		return result;
 	}
-
+	
+	
+	/**
+	 * Method for reading data from O-MI sand box 
+	 * 
+	 */
 	public String getDataFromServer(String url, String finalMessage) {
 		//System.out.println(finalMessage);
 		OkHttpClient client = new OkHttpClient.Builder()
@@ -59,7 +71,11 @@ public class HTTPConnections {
 		return result; 
 	}
 
-
+	
+	/**
+	 * Method for sending XML message to the O-MI sand box (Asynchronously)
+	 * 
+	 */
 	public void sendDataToServerAsync(String url, String finalMessage) {
 		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(100, TimeUnit.SECONDS)
 				.writeTimeout(50, TimeUnit.SECONDS)
@@ -88,6 +104,40 @@ public class HTTPConnections {
 			}
 
 		});
+	}
+	
+	/**
+	 * Method to send OMI write envelope to the sand box (Another way)
+	 * 
+	 */
+	public void sendData(String url, String finalMessage) {
+		HttpURLConnection httpcon = null;
+		OutputStream os =  null;
+		try {
+			httpcon = (HttpURLConnection) ((new URL(url).openConnection()));
+			httpcon.setDoOutput(true);
+			httpcon.setRequestProperty("Content-Type", "text/xml");
+			httpcon.setRequestMethod("POST");
+			httpcon.setUseCaches(false);
+			byte[] outputBytes = finalMessage.getBytes("UTF-8");
+			os = httpcon.getOutputStream();
+			os.write(outputBytes);
+			System.out.println(httpcon.getResponseMessage());
+
+		} catch (Throwable e) {
+			System.out.println(e.getMessage());
+			System.exit(1);
+		} finally {
+			if (os != null) {
+				try {
+					os.close();
+				} catch (IOException e) {}
+			}
+
+			if (httpcon != null) {
+				httpcon.disconnect();
+			}
+		}
 	}
 
 }

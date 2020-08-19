@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
+
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -17,15 +19,13 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.json.JSONException;
 
 import com.aalto.hashing.db.DatabaseMethods;
-import com.aalto.hashing.servlets.HTTPRequestServlet;
-import com.aalto.hashing.module.HashingMethods;
 
 
 public class Main {
 
 	private static DatabaseMethods dm = new DatabaseMethods();
-	private static HashingMethods hm = new HashingMethods();
-	
+	//private static HashingMethods hm = new HashingMethods();
+	//private static HTTPConnections httpConn = new HTTPConnections();
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException, JSONException {
 
@@ -39,15 +39,8 @@ public class Main {
 		prop.load(new FileInputStream("resources/config.properties"));
 		String serverPort = prop.getProperty("port_listen");
 		
+		// Create a database
 		dm.createTable("lookup");
-		
-		// Add server URL with hashes 
-//		String[] urls = prop.get("omi_node").toString().split(",");
-//		for (String url: urls) {
-//			//System.out.println(url);
-//			hm.addServers(url);
-//		}	
-//		System.out.println(hm.getServers());
 
 		Server server = new Server();
 		WebAppContext root = new WebAppContext();
