@@ -18,14 +18,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.json.JSONException;
 
-import com.aalto.hashing.db.DatabaseMethods;
-
 
 public class Main {
-
-	private static DatabaseMethods dm = new DatabaseMethods();
-	//private static HashingMethods hm = new HashingMethods();
-	//private static HTTPConnections httpConn = new HTTPConnections();
 	
 	public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException, JSONException {
 
@@ -40,7 +34,9 @@ public class Main {
 		String serverPort = prop.getProperty("port_listen");
 		
 		// Create a database
-		dm.createTable("lookup");
+		//dm.createTable();
+		
+		//DatabaseMethods dm = new DatabaseMethods("lookup.db");
 
 		Server server = new Server();
 		WebAppContext root = new WebAppContext();

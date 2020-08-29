@@ -29,50 +29,60 @@ public class HTTPRequestServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private HashingMethods hm = new HashingMethods();
 	private HTTPConnections httpConn = new HTTPConnections();
-
+	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
-		hm = new HashingMethods();
+		
 		response.setContentType("text/html");
 		response.setStatus(HttpServletResponse.SC_OK);
 		PrintWriter out = response.getWriter();
+		String omiResponse = null;
 
+		String data = IOUtils.toString(request.getReader());
+		
+		if (data.isEmpty()) {
+			System.out.println("The request body is empty");
+			return;
+		} else {		
+			omiResponse = parseXml(data);
+			out.println("Response " + omiResponse);
+		}
 		// Start asynchronous operation and parse O-MI request
-		final AsyncContext acontext = request.startAsync();
-		acontext.setTimeout(0);
-		acontext.start(new Runnable() {
-			List<String> objectIds = new ArrayList<String>();
-			@Override
-			public void run() {
-				try {
-					//HttpServletResponse response = (HttpServletResponse) acontext.getResponse();
-
-					String data = IOUtils.toString(acontext.getRequest().getReader());
-					if (data.isEmpty()) {
-						System.out.println("The request body is empty");
-						return;
-					} else {
-						String omiResponse = "";
-						objectIds = parseXml(data);
-						if (objectIds.get(0).equals("read")) {
-							objectIds.remove(0);
-							String dataForHash = String.join("/", objectIds);
-							String server = hm.mapDataToServer(dataForHash);
-							omiResponse = httpConn.getDataFromServer(server, data);
-							out.println("Response " + omiResponse);
-							//System.out.println("Response sent! " + omiResponse);
-						}
-
-					}
-
-					acontext.complete();
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-
-			}		
-		});
+//		final AsyncContext acontext = request.startAsync();
+//		acontext.setTimeout(0);
+//		acontext.start(new Runnable() {
+//			List<String> objectIds = new ArrayList<String>();
+//			@Override
+//			public void run() {
+//				try {
+//					//HttpServletResponse response = (HttpServletResponse) acontext.getResponse();
+//
+//					String data = IOUtils.toString(acontext.getRequest().getReader());
+//					if (data.isEmpty()) {
+//						System.out.println("The request body is empty");
+//						return;
+//					} else {
+//						String omiResponse = "";
+//						objectIds = parseXml(data);
+//						if (objectIds.get(0).equals("read")) {
+//							objectIds.remove(0);
+//							String dataForHash = String.join("/", objectIds);
+//							String server = hm.mapDataToServer(dataForHash);
+//							omiResponse = httpConn.getDataFromServer(server, data);
+//							out.println("Response " + omiResponse);
+//							//System.out.println("Response sent! " + omiResponse);
+//						}
+//
+//					}
+//
+//					acontext.complete();
+//
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//
+//			}		
+//		});
 	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
@@ -81,9 +91,10 @@ public class HTTPRequestServlet extends HttpServlet {
 	}
 
 
-	public synchronized List<String> parseXml(String omiMessage) {
-
+	public String parseXml(String omiMessage) {
+		
 		List<String> objects = new ArrayList<String>();
+		String omiResponse = null;
 
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -107,10 +118,20 @@ public class HTTPRequestServlet extends HttpServlet {
 				String id = objectElement.getElementsByTagName("id").item(0).getTextContent();
 				objects.add(id);
 			}
+			
+			if (objects.get(0).equals("read")) {
+				objects.remove(0);
+				String dataForHash = String.join("/", objects);
+				String server = hm.mapDataToServer(dataForHash);
+				omiResponse = httpConn.getDataFromServerAsyn(server, omiMessage);
+				
+				//System.out.println("Response sent! " + omiResponse);
+			}
 
 		} catch (Exception e) {
 			System.out.println("Exception " + e.getMessage());
 		}
-		return objects;
+		return omiResponse;
+		
 	}
 }

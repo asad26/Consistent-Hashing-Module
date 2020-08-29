@@ -7,8 +7,7 @@ import com.aalto.hashing.db.DatabaseMethods;
 
 public class HashingMethods {
 
-	private DatabaseMethods database = new DatabaseMethods();
-	private final String dbName = "lookup";
+	private DatabaseMethods database = new DatabaseMethods("7servers.db");
 
 	
 	/**
@@ -26,7 +25,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public void addServers(String url) {	
-		database.insertToTable(hashFunction(url), url, dbName);
+		database.insertToTable(hashFunction(url), url);
 	}
 	
 	
@@ -35,7 +34,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public void removeServers(String url) {
-		database.deleteData(hashFunction(url), dbName);
+		database.deleteData(hashFunction(url));
 	}
 	
 	
@@ -44,7 +43,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public TreeMap<String, String> getServers() {
-		return database.readAllData(dbName);
+		return database.readAllData();
 	}
 
 
@@ -56,7 +55,7 @@ public class HashingMethods {
 
 		String hashKey = hashFunction(id);
 		String serverSucc = null; 
-		TreeMap<String, String> allData = database.readAllData(dbName);
+		TreeMap<String, String> allData = database.readAllData();
 		for (Map.Entry<String, String> pair : allData.entrySet()) {
 			int compare = hashKey.compareTo(pair.getKey());
 			if (compare < 0) {
@@ -82,7 +81,7 @@ public class HashingMethods {
 	public String getServerUrl(String id) {
 		String hashKey = hashFunction(id);
 		String serverURL = null;
-		serverURL = database.queryData(hashKey, dbName);
+		serverURL = database.queryData(hashKey);
 		//System.out.println(serverURL);
 		return serverURL;
 	}
@@ -93,7 +92,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public String findSuccessorServer(String serverKey) {
-		TreeMap<String, String> allData = database.readAllData(dbName);
+		TreeMap<String, String> allData = database.readAllData();
 		for (Map.Entry<String, String> pair : allData.entrySet()) {
 			int compare = serverKey.compareTo(pair.getKey());
 			if (compare < 0) {
@@ -114,7 +113,7 @@ public class HashingMethods {
 	 */
 	public String findPredecessorServer(String serverKey) {
 		
-		TreeMap<String, String> allData = database.readAllData(dbName);
+		TreeMap<String, String> allData = database.readAllData();
 		String preServer = allData.lowerKey(serverKey);
 		if (preServer != null) {
 			return preServer;

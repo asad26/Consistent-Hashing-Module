@@ -1,30 +1,51 @@
 package com.aalto.hashing.db;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.TreeMap;
 
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 public class DatabaseMethods {
 
+	//private HikariPool CONNECTION_POOL;
+	private static HikariDataSource ds;
+	
+	public DatabaseMethods(String dbName) {
+		
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:sqlite:./resources/sqlite/db/" + dbName);
+        hikariConfig.setDriverClassName("org.sqlite.JDBC");
+        //hikariConfig.setPoolName("SQLiteConnectionPool");
+        //DataSource dataSource = new HikariDataSource(hikariConfig);
+        hikariConfig.addDataSourceProperty("cachePrepStmts" , "true");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSize" , "250");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit" , "2048");
+        hikariConfig.setMaximumPoolSize(10);
+        //CONNECTION_POOL = new HikariPool(hikariConfig);
+        ds = new HikariDataSource( hikariConfig );
+        createTable();
+    }
+	
 	
 	/**
 	 * Connect to the database 
 	 * 
 	 */
-	private Connection connect(String dbName) {
-		// SQLite connection string
-		String url = "jdbc:sqlite:./resources/sqlite/db/" + dbName;
-		Connection conn = null;
+	private Connection connect() {
+		
 		try {
-			conn = DriverManager.getConnection(url);
+			return ds.getConnection();
 		} catch (SQLException e) {
-			System.out.println(e.getMessage());
-		} 
-		return conn;
+			e.printStackTrace();
+			return null;
+		}
+		
 	}
 
 	
@@ -32,12 +53,12 @@ public class DatabaseMethods {
 	 * Create table
 	 * 
 	 */
-	public void createTable(String dbName) {
-		String sql = "CREATE TABLE IF NOT EXISTS " + dbName +
+	public void createTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS lookup" +
 					 "(hashKey text PRIMARY KEY," +
 					 "server text NOT NULL)";
 
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				Statement stmt = conn.createStatement()) {
 			
 			stmt.execute(sql);
@@ -52,10 +73,10 @@ public class DatabaseMethods {
 	 * Insert a new row into the table
 	 *
 	 */
-	public void insertToTable(String hashKey, String server, String dbName) {
-		String sql = "INSERT or REPLACE INTO " + dbName + "(hashKey,server) VALUES(?,?)";
+	public void insertToTable(String hashKey, String server) {
+		String sql = "INSERT or REPLACE INTO lookup (hashKey,server) VALUES(?,?)";
 
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			
 			pstmt.setString(1, hashKey);
@@ -71,17 +92,18 @@ public class DatabaseMethods {
 	 * Query server from table based on the hash key
 	 *
 	 */
-	public String queryData(String hashKey, String dbName) {
-		String sql = "SELECT * FROM " + dbName + " WHERE hashKey = ?";
+	public String queryData(String hashKey) {
+		String sql = "SELECT * FROM lookup WHERE hashKey = ?";
 		String server = null;
 		
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			
 			pstmt.setString(1, hashKey);
-			ResultSet rs  = pstmt.executeQuery();
-			while (rs.next()) {
-				server = rs.getString("server");
+			try (ResultSet rs  = pstmt.executeQuery()) {
+				while (rs.next()) {
+					server = rs.getString("server");
+				}
 			}
 
 		} catch (SQLException e) {
@@ -95,22 +117,22 @@ public class DatabaseMethods {
 	 * Search database for the given hash key
 	 *
 	 */
-	public Boolean searchData(String hashKey, String dbName) {
-		String sql = "SELECT 1 FROM " + dbName + " WHERE hashKey = ?";
+	public Boolean searchData(String hashKey) {
+		String sql = "SELECT 1 FROM lookup WHERE hashKey = ?";
 		Boolean findData = false;
 		
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			
 			pstmt.setString(1, hashKey);
-			ResultSet rs  = pstmt.executeQuery();
-			if (!(rs.next())) { 
-				//System.out.println("ResultSet is empty"); 
-				findData = false;
-			} else {
-				findData = true;
+			try (ResultSet rs  = pstmt.executeQuery()) {
+				if (!(rs.next())) { 
+					//System.out.println("ResultSet is empty"); 
+					findData = false;
+				} else {
+					findData = true;
+				}
 			}
-
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}
@@ -122,10 +144,10 @@ public class DatabaseMethods {
 	 * Update value based on the hash key
 	 *
 	 */
-	public void updateData(String hashKey, String newValue, String dbName) {
-		String sql = "UPDATE " + dbName + " SET server = ? WHERE hashKey = ?";
+	public void updateData(String hashKey, String newValue) {
+		String sql = "UPDATE lookup SET server = ? WHERE hashKey = ?";
 		
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			
 			pstmt.setString(1, newValue);
@@ -142,10 +164,10 @@ public class DatabaseMethods {
 	 * Delete row from the table
 	 *
 	 */
-	public void deleteData(String hashKey, String dbName) {
-		String sql = "DELETE FROM " + dbName + " WHERE hashKey = ?";
+	public void deleteData(String hashKey) {
+		String sql = "DELETE FROM lookup WHERE hashKey = ?";
 		
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 			
 			pstmt.setString(1, hashKey);
@@ -161,19 +183,19 @@ public class DatabaseMethods {
 	 * Read all the data from table
 	 *
 	 */
-	public TreeMap<String, String> readAllData(String dbName) {
-		String sql = "SELECT * FROM " + dbName;
+	public TreeMap<String, String> readAllData() {
+		String sql = "SELECT * FROM lookup";
 		
 		TreeMap<String, String> hashKeysList = new TreeMap<String, String>();
-		try (Connection conn = this.connect(dbName + ".db");
+		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-			ResultSet rs  = pstmt.executeQuery();
+			try (ResultSet rs  = pstmt.executeQuery()) {
 
-			while (rs.next()) {
-				hashKeysList.put(rs.getString("hashKey"), rs.getString("server"));
+				while (rs.next()) {
+					hashKeysList.put(rs.getString("hashKey"), rs.getString("server"));
+				}
 			}
-
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
 		}

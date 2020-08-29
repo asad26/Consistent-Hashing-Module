@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -14,16 +15,23 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class HTTPConnections {
+	
+	private OkHttpClient client;
+	
+	
+	public HTTPConnections() {
+		client = new OkHttpClient.Builder()
+				.connectTimeout(100, TimeUnit.SECONDS)
+				.writeTimeout(100, TimeUnit.SECONDS)
+				.readTimeout(300, TimeUnit.SECONDS).build();
+	}
 
+	
 	/**
 	 * Method for sending XML message to the O-MI sand box (Synchronously)
 	 * 
 	 */
 	public String sendDataToServer(String url, String finalMessage) {
-		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(100, TimeUnit.SECONDS)
-				.writeTimeout(50, TimeUnit.SECONDS)
-				.readTimeout(50, TimeUnit.SECONDS).build();
-
 		MediaType textXml = MediaType.parse("text/xml; charset=utf-8");
 		Request request = new Request.Builder().url(url)
 				.post(RequestBody.create(textXml, finalMessage)).build();
@@ -48,11 +56,6 @@ public class HTTPConnections {
 	 */
 	public String getDataFromServer(String url, String finalMessage) {
 		//System.out.println(finalMessage);
-		OkHttpClient client = new OkHttpClient.Builder()
-				.connectTimeout(100, TimeUnit.SECONDS)
-				.writeTimeout(100, TimeUnit.SECONDS)
-				.readTimeout(100, TimeUnit.SECONDS).build();
-
 		MediaType textXML = MediaType.parse("text/xml; charset=utf-8");
 		Request request = new Request.Builder().url(url)
 				.post(RequestBody.create(textXML, finalMessage)).build();
@@ -61,7 +64,7 @@ public class HTTPConnections {
 		String result = null;
 		try {
 			response = client.newCall(request).execute();
-			System.out.println(response.message());
+			//System.out.println(response.message());
 			result =  response.body().string();
 			response.close();  
 
@@ -70,6 +73,39 @@ public class HTTPConnections {
 		}
 		return result; 
 	}
+	
+	
+	/**
+	 * Method for reading data from O-MI sand box (Asynchronously)
+	 * 
+	 */
+	public String getDataFromServerAsyn(String url, String finalMessage) {
+		//System.out.println(finalMessage);
+		MediaType textXML = MediaType.parse("text/xml; charset=utf-8");
+		Request request = new Request.Builder().url(url)
+				.post(RequestBody.create(textXML, finalMessage)).build();
+
+		String result = null;
+		CallbackFuture future = new CallbackFuture();
+		client.newCall(request).enqueue(future);
+		try {
+			Response response = future.get();
+			result = response.body().string();
+			//System.out.println(response.message());
+		} catch (Exception e) {
+			System.out.println("Exception.................. " + e.getMessage());
+		} 
+		return result;
+	}
+	
+	class CallbackFuture extends CompletableFuture<Response> implements Callback {
+	    public void onResponse(Call call, Response response) {
+	         super.complete(response);
+	    }
+	    public void onFailure(Call call, IOException e){
+	         super.completeExceptionally(e);
+	    }
+	}
 
 	
 	/**
@@ -77,10 +113,6 @@ public class HTTPConnections {
 	 * 
 	 */
 	public void sendDataToServerAsync(String url, String finalMessage) {
-		OkHttpClient client = new OkHttpClient.Builder().connectTimeout(100, TimeUnit.SECONDS)
-				.writeTimeout(50, TimeUnit.SECONDS)
-				.readTimeout(50, TimeUnit.SECONDS).build();
-
 		MediaType textXml = MediaType.parse("text/xml; charset=utf-8");
 		Request request = new Request.Builder().url(url)
 				.post(RequestBody.create(textXml, finalMessage)).build();
@@ -105,6 +137,7 @@ public class HTTPConnections {
 
 		});
 	}
+	
 	
 	/**
 	 * Method to send OMI write envelope to the sand box (Another way)

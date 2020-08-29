@@ -29,9 +29,7 @@ public class DataCollectionServlet extends HttpServlet {
 
 		try {
 			String data = IOUtils.toString(request.getReader());
-			//String server = hm.mapDataToServer(data);
 			JSONObject jsonObject = new JSONObject(data);
-			//System.out.println(jsonObject);
 			@SuppressWarnings("unchecked")
 			Iterator<String> keys = jsonObject.keys();
 			String key;
@@ -70,7 +68,7 @@ public class DataCollectionServlet extends HttpServlet {
 		String odf = "";
 		String dataForHash = path.substring(0, path.lastIndexOf("/"));
 		String server = hm.mapDataToServer(dataForHash);
-		System.out.println(server);
+		//System.out.println(server);
 		String[] objectArray = path.split("/");
 		int len = objectArray.length;
 		String infoItem = obj.createInfoItem(objectArray[len-1], value);
