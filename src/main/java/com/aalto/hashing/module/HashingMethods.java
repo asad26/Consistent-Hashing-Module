@@ -7,7 +7,13 @@ import com.aalto.hashing.db.DatabaseMethods;
 
 public class HashingMethods {
 
-	private DatabaseMethods database = new DatabaseMethods("7servers.db");
+	private DatabaseMethods database;
+	private static TreeMap<String, String> allData;
+	
+	public HashingMethods() {
+		database = new DatabaseMethods("3server.db");
+		allData = database.readAllData();
+	}
 
 	
 	/**
@@ -43,7 +49,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public TreeMap<String, String> getServers() {
-		return database.readAllData();
+		return allData;
 	}
 
 
@@ -55,7 +61,7 @@ public class HashingMethods {
 
 		String hashKey = hashFunction(id);
 		String serverSucc = null; 
-		TreeMap<String, String> allData = database.readAllData();
+		//TreeMap<String, String> allData = database.readAllData();
 		for (Map.Entry<String, String> pair : allData.entrySet()) {
 			int compare = hashKey.compareTo(pair.getKey());
 			if (compare < 0) {
@@ -92,7 +98,7 @@ public class HashingMethods {
 	 * 
 	 */
 	public String findSuccessorServer(String serverKey) {
-		TreeMap<String, String> allData = database.readAllData();
+		//TreeMap<String, String> allData = database.readAllData();
 		for (Map.Entry<String, String> pair : allData.entrySet()) {
 			int compare = serverKey.compareTo(pair.getKey());
 			if (compare < 0) {
@@ -113,7 +119,7 @@ public class HashingMethods {
 	 */
 	public String findPredecessorServer(String serverKey) {
 		
-		TreeMap<String, String> allData = database.readAllData();
+		//TreeMap<String, String> allData = database.readAllData();
 		String preServer = allData.lowerKey(serverKey);
 		if (preServer != null) {
 			return preServer;

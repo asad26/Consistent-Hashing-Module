@@ -19,8 +19,10 @@ public class DatabaseMethods {
 	public DatabaseMethods(String dbName) {
 		
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:sqlite:./resources/sqlite/db/" + dbName);
-        hikariConfig.setDriverClassName("org.sqlite.JDBC");
+        //hikariConfig.setJdbcUrl("jdbc:sqlite:./resources/sqlite/db/" + dbName);
+        //hikariConfig.setDriverClassName("org.sqlite.JDBC");
+        hikariConfig.setJdbcUrl("jdbc:h2:./resources/h2/db/" + dbName);
+        hikariConfig.setDriverClassName("org.h2.Driver");
         //hikariConfig.setPoolName("SQLiteConnectionPool");
         //DataSource dataSource = new HikariDataSource(hikariConfig);
         hikariConfig.addDataSourceProperty("cachePrepStmts" , "true");
@@ -28,7 +30,7 @@ public class DatabaseMethods {
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit" , "2048");
         hikariConfig.setMaximumPoolSize(10);
         //CONNECTION_POOL = new HikariPool(hikariConfig);
-        ds = new HikariDataSource( hikariConfig );
+        ds = new HikariDataSource(hikariConfig);
         createTable();
     }
 	
@@ -55,8 +57,8 @@ public class DatabaseMethods {
 	 */
 	public void createTable() {
 		String sql = "CREATE TABLE IF NOT EXISTS lookup" +
-					 "(hashKey text PRIMARY KEY," +
-					 "server text NOT NULL)";
+					 "(hashKey VARCHAR(128) PRIMARY KEY," +
+					 "server VARCHAR(128) NOT NULL)";
 
 		try (Connection conn = this.connect();
 				Statement stmt = conn.createStatement()) {
@@ -74,7 +76,7 @@ public class DatabaseMethods {
 	 *
 	 */
 	public void insertToTable(String hashKey, String server) {
-		String sql = "INSERT or REPLACE INTO lookup (hashKey,server) VALUES(?,?)";
+		String sql = "INSERT INTO lookup (hashKey,server) VALUES(?,?)";
 
 		try (Connection conn = this.connect();
 				PreparedStatement pstmt = conn.prepareStatement(sql)) {
