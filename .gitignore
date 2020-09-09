@@ -1,5 +1,5 @@
 target/
 ClientSocket.class
 .settings/
-resources/sqlite/db/
+resources/sqlite/
 resources/h2/
