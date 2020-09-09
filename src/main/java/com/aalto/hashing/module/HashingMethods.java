@@ -9,13 +9,13 @@ public class HashingMethods {
 
 	private DatabaseMethods database;
 	private static TreeMap<String, String> allData;
-	
+
 	public HashingMethods() {
 		database = new DatabaseMethods("3server.db");
 		allData = database.readAllData();
 	}
 
-	
+
 	/**
 	 * Generate SHA-256 hash code for a given data id 
 	 * 
@@ -24,8 +24,8 @@ public class HashingMethods {
 		String hashHex = DigestUtils.sha256Hex(dataItem);
 		return hashHex;
 	}	
-	
-	
+
+
 	/**
 	 * Store server URL with unique hash key in the list 
 	 * 
@@ -33,8 +33,8 @@ public class HashingMethods {
 	public void addServers(String url) {	
 		database.insertToTable(hashFunction(url), url);
 	}
-	
-	
+
+
 	/**
 	 * Remove server from the list 
 	 * 
@@ -42,8 +42,8 @@ public class HashingMethods {
 	public void removeServers(String url) {
 		database.deleteData(hashFunction(url));
 	}
-	
-	
+
+
 	/**
 	 * Get all the servers 
 	 * 
@@ -91,8 +91,8 @@ public class HashingMethods {
 		//System.out.println(serverURL);
 		return serverURL;
 	}
-	
-	
+
+
 	/**
 	 * Consistent hashing method to find successor server in the 'servers' list 
 	 * 
@@ -111,14 +111,14 @@ public class HashingMethods {
 		return allData.firstKey();
 
 	}
-	
-	
+
+
 	/**
 	 * Consistent hashing method for finding predecessor server in the 'servers' list 
 	 * 
 	 */
 	public String findPredecessorServer(String serverKey) {
-		
+
 		//TreeMap<String, String> allData = database.readAllData();
 		String preServer = allData.lowerKey(serverKey);
 		if (preServer != null) {
@@ -126,14 +126,14 @@ public class HashingMethods {
 		}
 		return allData.lastKey();
 	}
-	
-	
+
+
 	/*/**
 	 * Consistent hashing method to find server for data item 
 	 * 
 	 *
 	public String findServer(String dataKey) {
-		
+
 		TreeMap<String, String> allData = database.readAllData(dbName);
 		for (Map.Entry<String, String> pair : allData.entrySet()) {
 			int compare = dataKey.compareTo(pair.getKey());
@@ -147,11 +147,11 @@ public class HashingMethods {
 				return dataKey;
 			}
 		}
-		
+
 		return allData.firstKey();
 	}*/
-	
-	
+
+
 	/*public String findServer(String dataKey) {
 		for (Map.Entry<String, String> pair : servers.entrySet()) {
 			int compare = dataKey.compareTo(pair.getKey());
@@ -167,5 +167,5 @@ public class HashingMethods {
 		}
 		return servers.firstKey();
 	}*/
-	
+
 }

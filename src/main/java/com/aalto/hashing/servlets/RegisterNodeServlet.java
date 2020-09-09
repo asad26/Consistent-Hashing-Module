@@ -14,7 +14,7 @@ public class RegisterNodeServlet extends HttpServlet {
 	{
 		String ipAddress = request.getParameter("ip");
 		String omiPort = request.getParameter("port");
-		String serverUrl = "http://" + ipAddress + ":" + omiPort;
+		String serverUrl = "ws://" + ipAddress + ":" + omiPort;
 		hm.addServers(serverUrl);
 		System.out.println("New node added with IP: " + ipAddress + " and port: " + omiPort);
 	}

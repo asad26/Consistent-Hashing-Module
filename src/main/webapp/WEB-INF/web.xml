@@ -13,7 +13,6 @@
 	<servlet>
 		<servlet-name>RegisterNodeServlet</servlet-name>
 		<servlet-class>com.aalto.hashing.servlets.RegisterNodeServlet</servlet-class>
-		<async-supported>true</async-supported>
 	</servlet>
 
 	<servlet>

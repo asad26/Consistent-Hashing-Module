@@ -104,6 +104,13 @@
 			<version>1.4.200</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.glassfish.tyrus.bundles/tyrus-standalone-client -->
+		<dependency>
+			<groupId>org.glassfish.tyrus.bundles</groupId>
+			<artifactId>tyrus-standalone-client</artifactId>
+			<version>1.17</version>
+		</dependency>
+
 
 
 	</dependencies>
