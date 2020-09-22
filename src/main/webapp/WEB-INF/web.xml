@@ -21,6 +21,11 @@
 		<async-supported>true</async-supported>
 	</servlet>
 	
+	<servlet>
+	    <servlet-name>DataWebSocketServlet</servlet-name>
+	    <servlet-class>com.aalto.hashing.servlets.DataWebSocketServlet</servlet-class>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>HTTPRequestServlet</servlet-name>
 		<url-pattern>/</url-pattern>
@@ -36,4 +41,8 @@
 		<url-pattern>/Collect</url-pattern>
 	</servlet-mapping>
 
+	<servlet-mapping>
+	    <servlet-name>DataWebSocketServlet</servlet-name>
+	    <url-pattern>/data</url-pattern>
+	</servlet-mapping>
 </web-app>
