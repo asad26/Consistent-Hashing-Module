@@ -25,7 +25,7 @@ public class DataWebSocketServlet extends WebSocketServlet  {
 	
 	@Override
 	public void configure(WebSocketServletFactory factory) {
-		// set a 10 second idle timeout
+		// set a 50 second idle timeout
         factory.getPolicy().setIdleTimeout(50000);
         
         // register the socket
